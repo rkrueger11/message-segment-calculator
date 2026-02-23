@@ -40,7 +40,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SegmentedMessage = void 0;
-var grapheme_splitter_1 = __importDefault(require("grapheme-splitter"));
 var Segment_1 = __importDefault(require("./Segment"));
 var EncodedChar_1 = __importDefault(require("./EncodedChar"));
 var UnicodeToGSM_1 = __importDefault(require("./UnicodeToGSM"));
@@ -63,7 +62,7 @@ var SegmentedMessage = /** @class */ (function () {
     function SegmentedMessage(message, encoding, smartEncoding) {
         if (encoding === void 0) { encoding = 'auto'; }
         if (smartEncoding === void 0) { smartEncoding = false; }
-        var splitter = new grapheme_splitter_1.default();
+        var segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
         if (!validEncodingValues.includes(encoding)) {
             throw new Error("Encoding ".concat(encoding, " not supported. Valid values for encoding are ").concat(validEncodingValues.join(', ')));
         }
@@ -74,7 +73,7 @@ var SegmentedMessage = /** @class */ (function () {
         /**
          * @property {string[]} graphemes Graphemes (array of strings) the message have been split into
          */
-        this.graphemes = splitter.splitGraphemes(message).reduce(function (accumulator, grapheme) {
+        this.graphemes = Array.from(segmenter.segment(message), function (s) { return s.segment; }).reduce(function (accumulator, grapheme) {
             var result = grapheme === '\r\n' ? grapheme.split('') : [grapheme];
             return accumulator.concat(result);
         }, []);
@@ -172,7 +171,6 @@ var SegmentedMessage = /** @class */ (function () {
                     var previousSegment = segments[segments.length - 2];
                     if (!previousSegment.hasUserDataHeader) {
                         var removedChars = previousSegment.addHeader();
-                        // eslint-disable-next-line no-loop-func
                         removedChars.forEach(function (char) { return currentSegment.push(char); });
                     }
                 }
