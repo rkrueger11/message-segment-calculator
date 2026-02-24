@@ -1,10 +1,20 @@
 const { SegmentedMessage } = require('../dist');
-const chalk = require('chalk');
+
+// Simple ANSI color codes (no external dependency needed)
+const colors = {
+  reset: '\x1b[0m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  blue: '\x1b[34m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  grey: '\x1b[90m',
+};
 
 const encodingColors = {
-  'GSM-7': chalk.green,
-  'UCS-2': chalk.yellow,
-  UDH: chalk.grey,
+  'GSM-7': (text) => `${colors.green}${text}${colors.reset}`,
+  'UCS-2': (text) => `${colors.yellow}${text}${colors.reset}`,
+  UDH: (text) => `${colors.grey}${text}${colors.reset}`,
 };
 
 if (!process.argv[2]) {
@@ -39,17 +49,17 @@ function serializeSegment(segment) {
 }
 
 console.log(`
-Encoding: ${chalk.magenta(segmentedMessage.encodingName)}
-Number of Segment: ${chalk.magenta(segmentedMessage.segmentsCount)}
-Message Size: ${chalk.magenta(segmentedMessage.messageSize)}
-Total Size: ${chalk.magenta(segmentedMessage.totalSize)}
-Number of Unicode Scalars: ${chalk.magenta(segmentedMessage.numberOfUnicodeScalars)}
-Number of Characters: ${chalk.magenta(segmentedMessage.numberOfCharacters)}
+Encoding: ${colors.magenta}${segmentedMessage.encodingName}${colors.reset}
+Number of Segment: ${colors.magenta}${segmentedMessage.segmentsCount}${colors.reset}
+Message Size: ${colors.magenta}${segmentedMessage.messageSize}${colors.reset}
+Total Size: ${colors.magenta}${segmentedMessage.totalSize}${colors.reset}
+Number of Unicode Scalars: ${colors.magenta}${segmentedMessage.numberOfUnicodeScalars}${colors.reset}
+Number of Characters: ${colors.magenta}${segmentedMessage.numberOfCharacters}${colors.reset}
 
-${chalk.blue('Segments encoding')}`);
+${colors.blue}Segments encoding${colors.reset}`);
 
 segmentedMessage.segments.forEach((segment, index) => {
-  console.log(chalk.cyan(`\nSegment ${index + 1}\n`));
+  console.log(`${colors.cyan}\nSegment ${index + 1}\n${colors.reset}`);
   let serializedSegment = serializeSegment(segment);
   let byteIndex = 0;
   while (byteIndex < serializedSegment.length) {
