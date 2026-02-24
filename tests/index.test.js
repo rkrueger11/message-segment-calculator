@@ -237,3 +237,44 @@ describe('Line break styles tests', () => {
     expect(segmentedMessage.segmentsCount).toBe(2);
   });
 });
+
+describe('Smart Encoding cross-type tests', () => {
+  // Tests where smart encoding changes the encodingName and/or segment count
+  const curlyQuote = '\u201C'; // left double quotation mark, maps to " in SmartEncodingMap
+
+  test('70 curly quotes: UCS-2 without smart encoding, GSM-7 with smart encoding (1 segment each)', () => {
+    const message = curlyQuote.repeat(70);
+
+    const withoutSmart = new SegmentedMessage(message, 'auto', false);
+    expect(withoutSmart.encodingName).toBe('UCS-2');
+    expect(withoutSmart.segmentsCount).toBe(1);
+
+    const withSmart = new SegmentedMessage(message, 'auto', true);
+    expect(withSmart.encodingName).toBe('GSM-7');
+    expect(withSmart.segmentsCount).toBe(1);
+  });
+
+  test('71 curly quotes: smart encoding reduces from 2 UCS-2 segments to 1 GSM-7 segment', () => {
+    const message = curlyQuote.repeat(71);
+
+    const withoutSmart = new SegmentedMessage(message, 'auto', false);
+    expect(withoutSmart.encodingName).toBe('UCS-2');
+    expect(withoutSmart.segmentsCount).toBe(2);
+
+    const withSmart = new SegmentedMessage(message, 'auto', true);
+    expect(withSmart.encodingName).toBe('GSM-7');
+    expect(withSmart.segmentsCount).toBe(1);
+  });
+
+  test('161 curly quotes: smart encoding reduces from 3 UCS-2 segments to 2 GSM-7 segments', () => {
+    const message = curlyQuote.repeat(161);
+
+    const withoutSmart = new SegmentedMessage(message, 'auto', false);
+    expect(withoutSmart.encodingName).toBe('UCS-2');
+    expect(withoutSmart.segmentsCount).toBe(3);
+
+    const withSmart = new SegmentedMessage(message, 'auto', true);
+    expect(withSmart.encodingName).toBe('GSM-7');
+    expect(withSmart.segmentsCount).toBe(2);
+  });
+});
