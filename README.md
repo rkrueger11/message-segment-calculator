@@ -1,19 +1,30 @@
 # SMS Segment Calculator
 
-This repo contains a package for an SMS segments calculator. The package is released as a nodeJS package as well as a browser script. 
+This repo contains a package for an SMS segments calculator. The package is released as a nodeJS package as well as a browser script.
 A browser demo for this package can be accessed [here](https://twiliodeved.github.io/message-segment-calculator/)
 
-## Usage 
+## Features
 
-### nodeJS
+- Calculate SMS segments for GSM-7 and UCS-2 encoding
+- Automatic encoding detection
+- Support for Twilio's Smart Encoding
+- Detect non-GSM characters in messages
+- Handle extended graphemes and emoji correctly
+- Line break style detection (LF, CRLF, mixed)
+- TypeScript support with full type definitions
+- Works in Node.js and browser environments
 
-The package can be installed using: 
+## Installation
 
 ```shell
 npm install --save sms-segments-calculator
 ```
 
-Sample usage: 
+## Usage 
+
+### Node.js
+
+Basic usage:
 
 ```javascript
 const { SegmentedMessage } = require('sms-segments-calculator');
@@ -21,7 +32,21 @@ const { SegmentedMessage } = require('sms-segments-calculator');
 const segmentedMessage = new SegmentedMessage('Hello World');
 
 console.log(segmentedMessage.encodingName); // "GSM-7"
-console.log(segmentedMessage.segmentsCount); // "1"
+console.log(segmentedMessage.segmentsCount); // 1
+```
+
+With encoding and Smart Encoding options:
+
+```javascript
+// Force UCS-2 encoding
+const message1 = new SegmentedMessage('Hello', 'UCS-2');
+
+// Use Smart Encoding (converts certain Unicode characters to GSM-7 equivalents)
+const message2 = new SegmentedMessage('Hello™', 'auto', true);
+
+// Get non-GSM characters
+const message3 = new SegmentedMessage('Hello 😊');
+console.log(message3.getNonGsmCharacters()); // ['😊']
 ```
 
 ### Browser
@@ -40,35 +65,69 @@ Alternatively you can add the library to your page using the file [`segmentsCalc
 
 And example of usage can be find in [`docs/index.html`](https://github.com/TwilioDevEd/message-segment-calculator/blob/main/docs/index.html)
 
-## Documentation 
+## Documentation
 ### `SegmentedMessage` class
 
 This is the main class exposed by the package
 
-#### [`constructor(message, encoding)`](https://github.com/TwilioDevEd/message-segment-calculator/blob/403313a44ed406b3669cf3c57f32ca98fd92b1e1/src/libs/SegmentedMessage.ts#L37)
-Arguments:
-* `message`: Body of the SMS 
-* `encoding`: Optional: encoding. It can be `GSM-7`, `UCS-2`, `auto`. Default value: `auto`
+#### [`constructor(message, encoding, smartEncoding)`](https://github.com/TwilioDevEd/message-segment-calculator/blob/main/src/libs/SegmentedMessage.ts#L48)
 
-##### `encodingName` 
+Arguments:
+* `message` (string): Body of the SMS message
+* `encoding` (string, optional): Encoding type. Can be `GSM-7`, `UCS-2`, or `auto`. Default: `auto`
+* `smartEncoding` (boolean, optional): Enable [Twilio Smart Encoding](https://www.twilio.com/docs/messaging/services#smart-encoding) emulation. Default: `false`
+
+#### Properties
+
+##### `encodingName`
 
 Returns the name of the calculated encoding for the message: `GSM-7` or `UCS-2`
 
-#### [`totalSize`](https://github.com/TwilioDevEd/message-segment-calculator/blob/403313a44ed406b3669cf3c57f32ca98fd92b1e1/src/libs/SegmentedMessage.ts#L161)
+##### `totalSize`
 
 Total size of the message in bits (including User Data Header if present)
 
-#### [`messageSize`](https://github.com/TwilioDevEd/message-segment-calculator/blob/403313a44ed406b3669cf3c57f32ca98fd92b1e1/src/libs/SegmentedMessage.ts#L172)
+##### `messageSize`
 
 Total size of the message in bits (excluding User Data Header if present)
 
-#### [`segmentsCount`](https://github.com/TwilioDevEd/message-segment-calculator/blob/403313a44ed406b3669cf3c57f32ca98fd92b1e1/src/libs/SegmentedMessage.ts#L184)
+##### `segmentsCount`
 
-Number of segment(s)
+Number of segment(s) the message is split into
 
-### [`getNonGsmCharacters()`]
+##### `numberOfCharacters`
 
-Return an array with the non GSM-7 characters in the body. It can be used to replace character and reduce the number of segments 
+Number of characters in the message. GSM-7 extension characters count as 2.
+
+##### `numberOfUnicodeScalars`
+
+Number of Unicode scalar values in the message
+
+##### `graphemes`
+
+Array of graphemes (user-perceived characters) the message is split into
+
+##### `segments`
+
+Array of segment objects representing each SMS segment
+
+##### `lineBreakStyle`
+
+Detected line break style: `'LF'`, `'CRLF'`, `'LF+CRLF'`, or `undefined`
+
+##### `warnings`
+
+Array of warning messages about the message content
+
+#### Methods
+
+##### `getNonGsmCharacters()`
+
+Returns an array of non-GSM-7 characters in the message body. Useful for identifying characters that force UCS-2 encoding and could be replaced to reduce segments.
+
+##### `getEncodingName()`
+
+Returns the encoding name for the message (`'GSM-7'` or `'UCS-2'`) 
 
 ## Try the library
 

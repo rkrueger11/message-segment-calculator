@@ -1,5 +1,3 @@
-import GraphemeSplitter from 'grapheme-splitter';
-
 import Segment from './Segment';
 import EncodedChar from './EncodedChar';
 import UnicodeToGsm from './UnicodeToGSM';
@@ -46,7 +44,7 @@ export class SegmentedMessage {
    *
    */
   constructor(message: string, encoding: SmsEncoding | 'auto' = 'auto', smartEncoding: boolean = false) {
-    const splitter = new GraphemeSplitter();
+    const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 
     if (!validEncodingValues.includes(encoding)) {
       throw new Error(
@@ -63,7 +61,7 @@ export class SegmentedMessage {
     /**
      * @property {string[]} graphemes Graphemes (array of strings) the message have been split into
      */
-    this.graphemes = splitter.splitGraphemes(message).reduce((accumulator: string[], grapheme: string) => {
+    this.graphemes = Array.from(segmenter.segment(message), (s) => s.segment).reduce((accumulator: string[], grapheme: string) => {
       const result = grapheme === '\r\n' ? grapheme.split('') : [grapheme];
       return accumulator.concat(result);
     }, []);
@@ -157,7 +155,6 @@ export class SegmentedMessage {
 
         if (!previousSegment.hasUserDataHeader) {
           const removedChars = previousSegment.addHeader();
-          // eslint-disable-next-line no-loop-func
           removedChars.forEach((char) => currentSegment.push(char));
         }
       }
