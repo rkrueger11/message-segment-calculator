@@ -28,6 +28,9 @@
   "author": "gverni",
   "homepage": "https://twiliodeved.github.io/message-segment-calculator/",
   "license": "MIT",
+  "jest": {
+    "testPathIgnorePatterns": ["/node_modules/", "/.claude/"]
+  },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
     "@types/node": "^22.15.0",
